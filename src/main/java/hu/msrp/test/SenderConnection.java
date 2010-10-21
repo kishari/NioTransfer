@@ -98,7 +98,8 @@ public class SenderConnection implements Runnable {
 //		for (int i = 0; i < 512; i++) {
 			data += "Hello vazze ";
 //		}
-		send(data);
+		if (!isServer)
+			send(data);
 		
 	}
 	
