@@ -2,15 +2,25 @@ package hu.msrp.test;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Observable;
+import java.util.Observer;
 
-public class Connection {
+public class Connection implements Observer {
 	
-	private ReceiverConnection receiverConn;
-	private SenderConnection senderConn;
+	private ReceiverConnection receiverConn = null;
+	private SenderConnection senderConn = null;
+	private MSRPStack msrpStack;
 	
-	public Connection(InetAddress localHostAddress, int localPort, InetAddress remoteHostAddress, int remotePort, boolean server) throws IOException {
-		this.receiverConn = new ReceiverConnection(localHostAddress, localPort, this, server);
-		this.senderConn = new SenderConnection(remoteHostAddress, remotePort, this, server);
+	public Connection(InetAddress localHostAddress, int localPort, 
+					  InetAddress remoteHostAddress, int remotePort,
+					  MSRPStack msrpStack) throws IOException {
+		this.receiverConn = new ReceiverConnection(localHostAddress, localPort, this);
+		this.senderConn = new SenderConnection(remoteHostAddress, remotePort, this);
+		this.msrpStack = msrpStack;
+	}
+	
+	public Connection(InetAddress localhostAddress, int remotePort) throws IOException {
+		this.receiverConn = new ReceiverConnection(localhostAddress, remotePort, this);
 	}
 	
 
@@ -25,4 +35,12 @@ public class Connection {
 	public void send(String data) throws IOException {
 		getSenderConn().send(data);
 	}
+
+
+	@Override
+	public void update(Observable o, Object arg) {
+		System.out.println("MSRPStack update: " + o.toString() + " " + arg.toString());
+		msrpStack.update();
+	}
+
 }

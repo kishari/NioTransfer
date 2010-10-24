@@ -10,13 +10,12 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Iterator;
+import java.util.Observable;
 
-public class ReceiverConnection implements Runnable {
+public class ReceiverConnection extends Observable implements Runnable {
 
 	private int sumOfReadedByte = 0;
 	private int countOfRead = 0;
-	
-	private boolean isServer = false; 
 	
 	private ByteBuffer buff = null;
 	
@@ -28,14 +27,14 @@ public class ReceiverConnection implements Runnable {
 	private ServerSocketChannel serverSocketChannel = null;
 	private Selector selector = null;
 	
-	public ReceiverConnection(InetAddress localHostAddress, int localPort, Connection parent, boolean server) throws IOException {
+	public ReceiverConnection(InetAddress localHostAddress, int localPort, Connection parent) throws IOException {
 		this.localHostAddress = localHostAddress;
 		this.localPort = localPort;
 		this.parent = parent;
-		this.isServer = server;
 		this.selector = initSelector();
 		buff = ByteBuffer.allocate(1000000);
 		buff.clear();
+		this.addObserver(parent);
 	}
 
 	public void run() {
@@ -68,6 +67,7 @@ public class ReceiverConnection implements Runnable {
 	
 	private void accept(SelectionKey key) throws IOException {
 		  System.out.println("accept!");
+		  this.setChanged();
 		    // For an accept to be pending the channel must be a server socket channel.
 		    ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 
@@ -78,6 +78,7 @@ public class ReceiverConnection implements Runnable {
 		    // Register the new SocketChannel with our Selector, indicating
 		    // we'd like to be notified when there's data waiting to be read
 		    socketChannel.register(this.selector, SelectionKey.OP_READ);
+		    this.notifyObservers("Accept");
 	}
 	
 	private void read(SelectionKey key) throws IOException {
@@ -124,12 +125,6 @@ public class ReceiverConnection implements Runnable {
 		    //FileUtil.printToFile("/home/csaba/temp/recvData", data);
 		    System.out.println(countOfRead + " sum byte: " + sumOfReadedByte);
 		    
-		    if (countOfRead%5 == 0 && isServer) {
-		    	String m = new String(data);
-		    	m += countOfRead;
-		    	parent.getSenderConn().send(m);
-		    }
-
 	}
 	  
 	private Selector initSelector() throws IOException {

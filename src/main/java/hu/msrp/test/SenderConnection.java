@@ -15,17 +15,16 @@ public class SenderConnection implements Runnable {
 	private InetAddress remoteHostAddress;
 	private int remotePort;
 	
-	private boolean isServer = false;
-	private boolean isFirstSend = true;
+	private boolean started = false;
+	
 	private Connection parent;
 	private SocketChannel senderChannel = null;
 	private Selector selector = null;
 	
-	public SenderConnection(InetAddress remoteHostAddress, int remotePort, Connection parent, boolean isServer) throws IOException {
+	public SenderConnection(InetAddress remoteHostAddress, int remotePort, Connection parent) throws IOException {
 		this.remoteHostAddress = remoteHostAddress;
 		this.remotePort = remotePort;
 		this.parent = parent;
-		this.isServer = isServer;
 		this.selector = initSelector();
 	}
 	
@@ -34,7 +33,10 @@ public class SenderConnection implements Runnable {
 			senderChannel = this.initiateConnection();
 		} catch (IOException e1) {
 			e1.printStackTrace();
-		}		
+		}
+		
+		setStarted(true);
+		
 		while (true) {
 			try {
 				// Wait for an event one of the registered channels
@@ -65,7 +67,7 @@ public class SenderConnection implements Runnable {
 	}
 	
 	private SocketChannel initiateConnection() throws IOException {
-		System.out.println("sender initiateConnection");
+		System.out.println("initiateConnection");
 		// Create a non-blocking socket channel
 		SocketChannel socketChannel = SocketChannel.open();
 		socketChannel.configureBlocking(false);
@@ -93,14 +95,6 @@ public class SenderConnection implements Runnable {
 		
 		key.interestOps(SelectionKey.OP_READ);
 		
-		String data = new String();
-		
-//		for (int i = 0; i < 512; i++) {
-			data += "Hello vazze ";
-//		}
-		if (!isServer)
-			send(data);
-		
 	}
 	
 	private Selector initSelector() throws IOException {
@@ -109,44 +103,24 @@ public class SenderConnection implements Runnable {
 	}
 
 	public void send(String msg) throws IOException {
-		//System.out.println("Client send to server");
 		byte[] data = msg.getBytes();
 		System.out.println(msg.getBytes().length);
 		ByteBuffer b = ByteBuffer.allocate(msg.getBytes().length);
 		b.clear();
 		b = ByteBuffer.wrap(data);
-	
-		if (isServer) {
-			if (isFirstSend) {
-				try {
-					Thread.sleep(10000);
-					isFirstSend = false;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			System.out.println("Server küldi: " + new String(data));
-			
-			this.senderChannel.write(b);
-		}
-		else {
-			for (int i = 0; i < 15; i++) {
-				//FileUtil.printToFile("/home/csaba/temp/sendData", data);
-				//System.out.println(i + " .küldés...");
-				this.senderChannel.write(b);
-				b.rewind();
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		
+    	senderChannel.write(b);
 	}
 	
 	public void start() {
+		System.out.println("senderConnection start!");
 		new Thread(this).start();
+	}
+
+	public void setStarted(boolean started) {
+		this.started = started;
+	}
+
+	public boolean isStarted() {
+		return started;
 	}
 }
