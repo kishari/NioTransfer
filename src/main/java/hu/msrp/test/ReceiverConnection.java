@@ -158,7 +158,7 @@ public class ReceiverConnection extends Observable implements Runnable {
 	
 	private List<String> preParse(byte[] msg) {
 		List<String> messages = new ArrayList<String>();
-		
+		int succesProcessedByteCount = 0;
 		String m = new String(msg);
 		 //System.out.println(m);
 		if (!saveBuffer.isEmpty()) {
@@ -172,8 +172,6 @@ public class ReceiverConnection extends Observable implements Runnable {
 		System.out.println("preparser data length: " + data.capacity());
 		data.limit(data.capacity());
 		System.out.println("data limit: " + data.limit());
-		//System.out.println(data.position());
-		//System.out.println("preparser data new length: " + data.capacity());
 		
 		int state = 0;
 		int byteCounter = 0;
@@ -242,11 +240,22 @@ public class ReceiverConnection extends Observable implements Runnable {
 							messages.add(chunk);
 							state = 0;
 							messageCounter++;
+							succesProcessedByteCount += byteCounter;
 							byteCounter = 0;
 						}
-			    }
+			    }			
 		}
 		
+		System.out.println("success processed byte: " + succesProcessedByteCount);
+		
+		if (byteCounter != 0) {
+			byte[] save = new byte[byteCounter];
+			data.position(data.position() - byteCounter);
+			System.out.println("Lekérjük a databól a " + data.position() + ". bytetól " + byteCounter + " byteot");
+			data.get(save, 0, byteCounter);
+			saveBuffer = new String(save);
+			System.out.println("Maradék adat: " + saveBuffer);
+		}
 		return messages;
 	}
 	
