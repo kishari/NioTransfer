@@ -35,7 +35,7 @@ public class Receiver extends JFrame implements WindowListener, Runnable {
 		
 		win.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 				
-		JButton inviteButton = new JButton("Invite");
+		JButton inviteButton = new JButton("--> Invite");
 		inviteButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -44,7 +44,7 @@ public class Receiver extends JFrame implements WindowListener, Runnable {
 			}			
 		});
 		
-		JButton okButton = new JButton("200 OK");
+		JButton okButton = new JButton("200 OK -->");
 		okButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -63,7 +63,7 @@ public class Receiver extends JFrame implements WindowListener, Runnable {
 			}			
 		});
 		
-		JButton ackButton = new JButton("Ack");
+		JButton ackButton = new JButton("--> Ack");
 		ackButton.addActionListener(new ActionListener(){
 
 			@Override

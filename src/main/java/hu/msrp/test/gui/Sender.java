@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
 import javax.swing.JButton;
@@ -32,6 +33,10 @@ public class Sender extends JFrame implements WindowListener, Runnable {
 	private void createConnection() throws UnknownHostException, IOException {
 		getMsrpStack().createConnection(InetAddress.getLocalHost(), 9090, InetAddress.getLocalHost(), 9092);
 	}
+	
+	private void createNewSession() {
+		getMsrpStack().createSession();
+	}
 
 	private JFrame createGUI() {
 		JFrame win = new JFrame();
@@ -39,7 +44,7 @@ public class Sender extends JFrame implements WindowListener, Runnable {
 		win.setTitle("Sender");
 		win.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 				
-		JButton inviteButton = new JButton("Invite");
+		JButton inviteButton = new JButton("Invite -->");
 		inviteButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -49,13 +54,14 @@ public class Sender extends JFrame implements WindowListener, Runnable {
 			}			
 		});
 		
-		JButton okButton = new JButton("200 OK");
+		JButton okButton = new JButton("--> 200 OK");
 		okButton.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
 					createConnection();
+					//createNewSession();
 					getMsrpStack().getConnection().getReceiverConn().start();
 				} catch (UnknownHostException e) {
 					e.printStackTrace();
@@ -74,8 +80,17 @@ public class Sender extends JFrame implements WindowListener, Runnable {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					getMsrpStack().getConnection().getSenderConn().send("Nesze üzenet");
+					MSRPMessage m = new MSRPMessage();
+					m.createFromPath("localhost", 9080, "sessionId1");
+					m.createToPath("localhost", 9082, "sessionId2");
+					
+					for (int i = 0; i < 2; i++)
+						getMsrpStack().sendMessage(m.toString() + "+");
+					
+					getMsrpStack().sendMessage(m.toString() + "$");
 				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (URISyntaxException e) {
 					e.printStackTrace();
 				}
 			}			

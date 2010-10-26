@@ -9,13 +9,17 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Observable;
 
 public class ReceiverConnection extends Observable implements Runnable {
 
 	private int sumOfReadedByte = 0;
 	private int countOfRead = 0;
+	
+	private String saveBuffer = new String();
 	
 	private ByteBuffer buff = null;
 	
@@ -121,9 +125,17 @@ public class ReceiverConnection extends Observable implements Runnable {
 		    buff.get(data, 0, numRead);
 		    //System.out.println(b.toString());
 		    
-		    System.out.println("data[" + numRead + "]: " + new String(data));
+		    List<String> messages = preParse(data);
+		    int i = 0;
+		    for (String m : messages) {
+		    	i++;
+		    	System.out.println("Preparser után az adat " + i + ":\n" + m + " x");
+		    }
+		    System.out.println("-----------------------------------------------------------");
+		    System.out.println("-----------------------------------------------------------");
+		    //System.out.println("data[" + numRead + "]: " + new String(data));
 		    //FileUtil.printToFile("/home/csaba/temp/recvData", data);
-		    System.out.println(countOfRead + " sum byte: " + sumOfReadedByte);
+		    //System.out.println(countOfRead + " sum byte: " + sumOfReadedByte);
 		    
 	}
 	  
@@ -142,6 +154,100 @@ public class ReceiverConnection extends Observable implements Runnable {
 	    serverSocketChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
 
 	    return socketSelector;
+	}
+	
+	private List<String> preParse(byte[] msg) {
+		List<String> messages = new ArrayList<String>();
+		
+		String m = new String(msg);
+		 //System.out.println(m);
+		if (!saveBuffer.isEmpty()) {
+			m = saveBuffer + m;
+			saveBuffer = "";
+		}
+		
+		System.out.println("preparser üzenet: " + m);
+		
+		ByteBuffer data = ByteBuffer.wrap(m.getBytes(), 0, m.length());
+		System.out.println("preparser data length: " + data.capacity());
+		data.limit(data.capacity());
+		System.out.println("data limit: " + data.limit());
+		//System.out.println(data.position());
+		//System.out.println("preparser data new length: " + data.capacity());
+		
+		int state = 0;
+		int byteCounter = 0;
+		int messageCounter = 0;
+		while (data.hasRemaining()) {
+			byte b = data.get();			
+			byteCounter++;
+			switch(state) {
+				case 0 : 
+						if (b == '\r') state = 1;
+				
+						break;
+				case 1 :
+						if (b == '\n') state = 2;
+						else state = 0;
+				
+						break;
+				case 2 :
+						if (b == '-')	state = 3;
+						else state = 0;
+
+				 		break;
+				case 3 :
+						if (b == '-')	state = 4;
+						else state = 0;
+				
+		 		 		break;
+				case 4 :
+						if (b == '-')	state = 5;
+				 		else state = 0;
+
+ 		 		 		break;
+				case 5 :
+						if (b == '-')	state = 6;
+				 		else state = 0;
+				
+ 		 		 		break;
+				case 6 : 
+						if (b == '-') state = 7;
+				 		 else state = 0;
+ 		 		 		 
+						 break;
+				case 7 : 
+						if (b == '-')	state = 8;
+				 		 else state = 0;
+ 		 		 
+						 break;
+				case 8 : 
+						if (b == '-')	state = 9;
+				 		 else state = 0;
+ 		 		 
+						 break;
+				case 9 :
+						System.out.println("case 9, b: " + (char)b);
+						System.out.println(data.remaining());
+						if (b == '$' || b == '#' || b == '+') state = 10;
+						
+				case 10 : 
+						if (state == 10) {
+							System.out.println("case 10");
+							byte[] temp = new byte[byteCounter];
+							data.position(data.position() - byteCounter);
+							System.out.println("Lekérjük a databól a " + data.position() + ". bytetól " + byteCounter + " byteot");
+							data.get(temp, 0, byteCounter);
+							String chunk = new String(temp);
+							messages.add(chunk);
+							state = 0;
+							messageCounter++;
+							byteCounter = 0;
+						}
+			    }
+		}
+		
+		return messages;
 	}
 	
 	public void start() {

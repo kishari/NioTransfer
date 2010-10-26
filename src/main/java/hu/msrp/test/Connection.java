@@ -2,6 +2,7 @@ package hu.msrp.test;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -40,7 +41,12 @@ public class Connection implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		System.out.println("MSRPStack update: " + o.toString() + " " + arg.toString());
-		msrpStack.update();
+		try {
+			msrpStack.update();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
