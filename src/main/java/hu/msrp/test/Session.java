@@ -3,7 +3,12 @@ package hu.msrp.test;
 public class Session {
 	private String sessionId;
 	private Connection parentConnection;
+	private TransactionManager transactionManager = new TransactionManager();
 	
+	public TransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
 	public Session(Connection parentConnection) {
 		this.parentConnection = parentConnection;
 	}

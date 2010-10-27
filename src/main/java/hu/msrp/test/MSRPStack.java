@@ -11,6 +11,8 @@ public class MSRPStack {
 
 	private Connection connection = null;
 	private List<Session> sessions = new ArrayList<Session>();
+	
+	private SessionManager sessionManager = new SessionManager();
 
 	public void createConnection(InetAddress localhostAddress, int localPort) throws IOException {
 		this.connection = new Connection(localhostAddress, localPort);
@@ -37,6 +39,10 @@ public class MSRPStack {
 	
 	public List<Session> getSessions() {
 		return sessions;
+	}
+	
+	public SessionManager getSessionManager() {
+		return sessionManager;
 	}
 	
 	public void update() throws URISyntaxException {
