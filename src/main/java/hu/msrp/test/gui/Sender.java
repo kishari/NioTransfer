@@ -81,24 +81,19 @@ public class Sender extends JFrame implements WindowListener, Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
 					MSRPMessage m = new MSRPMessage();
-					m.createFromPath("localhost", 9080, "sessionId1");
-					m.createToPath("localhost", 9082, "sessionId2");
+					m.createTestMessage();
 					
 					for (int i = 0; i < 2; i++)
-						getMsrpStack().sendMessage(m.toString() + "+");
+						getMsrpStack().sendMessage(m.toString());
 					
 					String test = m.toString().substring(0, 100);
 					getMsrpStack().sendMessage(test);
-					test = m.toString().substring(100);
+					test = m.toString().substring(100, m.toString().length() - 1);
 					Thread.sleep(1000);
 					getMsrpStack().sendMessage(test + "$");
-					//getMsrpStack().sendMessage(m.toString() + "$");
 				} catch (IOException e) {
 					e.printStackTrace();
-				} catch (URISyntaxException e) {
-					e.printStackTrace();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}			

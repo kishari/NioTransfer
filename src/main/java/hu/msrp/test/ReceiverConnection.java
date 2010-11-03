@@ -129,10 +129,11 @@ public class ReceiverConnection extends Observable implements Runnable {
 		    int i = 0;
 		    for (String m : messages) {
 		    	i++;
-		    	System.out.println("Preparser után az adat " + i + ":\n" + m + " x");
+		    	//System.out.println("Preparser után az adat " + i + ":\n" + m + " x");
+		    	MessageUtil.createMessage(m);
 		    }
-		    System.out.println("-----------------------------------------------------------");
-		    System.out.println("-----------------------------------------------------------");
+		    //System.out.println("-----------------------------------------------------------");
+		    //System.out.println("-----------------------------------------------------------");
 		    //System.out.println("data[" + numRead + "]: " + new String(data));
 		    //FileUtil.printToFile("/home/csaba/temp/recvData", data);
 		    //System.out.println(countOfRead + " sum byte: " + sumOfReadedByte);
@@ -166,12 +167,12 @@ public class ReceiverConnection extends Observable implements Runnable {
 			saveBuffer = "";
 		}
 		
-		System.out.println("preparser üzenet: " + m);
+		//System.out.println("preparser üzenet: " + m);
 		
 		ByteBuffer data = ByteBuffer.wrap(m.getBytes(), 0, m.length());
-		System.out.println("preparser data length: " + data.capacity());
+		//System.out.println("preparser data length: " + data.capacity());
 		data.limit(data.capacity());
-		System.out.println("data limit: " + data.limit());
+		//System.out.println("data limit: " + data.limit());
 		
 		int state = 0;
 		int byteCounter = 0;
@@ -225,16 +226,16 @@ public class ReceiverConnection extends Observable implements Runnable {
  		 		 
 						 break;
 				case 9 :
-						System.out.println("case 9, b: " + (char)b);
-						System.out.println(data.remaining());
+						//System.out.println("case 9, b: " + (char)b);
+						//System.out.println(data.remaining());
 						if (b == '$' || b == '#' || b == '+') state = 10;
 						
 				case 10 : 
 						if (state == 10) {
-							System.out.println("case 10");
+							//System.out.println("case 10");
 							byte[] temp = new byte[byteCounter];
 							data.position(data.position() - byteCounter);
-							System.out.println("Lekérjük a databól a " + data.position() + ". bytetól " + byteCounter + " byteot");
+							//System.out.println("Lekérjük a databól a " + data.position() + ". bytetól " + byteCounter + " byteot");
 							data.get(temp, 0, byteCounter);
 							String chunk = new String(temp);
 							messages.add(chunk);
@@ -246,15 +247,15 @@ public class ReceiverConnection extends Observable implements Runnable {
 			    }			
 		}
 		
-		System.out.println("success processed byte: " + succesProcessedByteCount);
+		//System.out.println("success processed byte: " + succesProcessedByteCount);
 		
 		if (byteCounter != 0) {
 			byte[] save = new byte[byteCounter];
 			data.position(data.position() - byteCounter);
-			System.out.println("Lekérjük a databól a " + data.position() + ". bytetól " + byteCounter + " byteot");
+			//System.out.println("Lekérjük a databól a " + data.position() + ". bytetól " + byteCounter + " byteot");
 			data.get(save, 0, byteCounter);
 			saveBuffer = new String(save);
-			System.out.println("Maradék adat: " + saveBuffer);
+			//System.out.println("Maradék adat: " + saveBuffer);
 		}
 		return messages;
 	}

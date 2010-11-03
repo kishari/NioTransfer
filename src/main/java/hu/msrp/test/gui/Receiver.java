@@ -32,6 +32,7 @@ public class Receiver extends JFrame implements WindowListener, Runnable {
 		JFrame win = new JFrame();
 		win.setLayout(new BorderLayout());
 		win.setTitle("Receiver");
+		win.setLocation(0, 210);
 		
 		win.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 				
